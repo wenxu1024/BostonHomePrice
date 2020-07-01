@@ -1,0 +1,99 @@
+{% extends "admin/change_list.html" %}
+{% load humanize %}
+{% block content_title %}
+    <h1> Homes Summary </h1>
+{% endblock %}
+{% block result_list %}
+    <style>
+        .bar-chart {
+            display: flex;
+            justify-content: space-around;
+            height: 160px;
+            padding-top: 60px;
+            overflow: hidden;
+        }
+        .bar-chart .bar {
+            flex: 100%;
+            align-self: flex-end;
+            margin-right: 2px;
+            position: relative;
+            background-color: #79aec8;
+        }
+        .bar-chart .bar:last-child {
+            margin: 0;
+        }
+        .bar-chart .bar:hover {
+            background-color: #417690;
+        }
+        .bar-chart .bar .bar-tooltip {
+            position: relative;
+            z-index: 999;
+        }
+        .bar-chart .bar .bar-tooltip {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-30%);
+            text-align: center;
+            font-weight: bold;
+            opacity: 0;
+        }
+        .bar-chart .bar:hover .bar-tooltip {
+            opacity: 1;
+        }
+    </style>
+
+    <div class="results" width="90%" margin-left="5%">
+        <table>
+            <thead>
+                <tr>
+                    <th><div class="text"><a href="#">Last Sold Date</a></div></th>
+                    <th><div class="text"><a href="#">Count</a></div></th>
+                    <th><div class="text"><a href="#">Average Sold Price</a></div></th>
+                    <th><div class="text"><a href="#">Minimum Sold Price</a></div></th>
+                    <th><div class="text"><a href="#">Maximum Sold Price</a></div></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in summary %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td> {{ row.lastsolddate }}</td>
+                    <td> {{ row.total }} </td>
+                    <td> ${{ row.average | intcomma }} </td>
+                    <td> ${{ row.minimum | intcomma }} </td>
+                    <td> ${{ row.maximum | intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <br>
+        <br>
+        <p><strong> Histogram of number of homes sold over time </strong></p>
+        <div class="bar-chart">
+            {% for x in summary_over_time %}
+                <div class="bar" style="height:{{x.pct}}%">
+                    <div class="bar-tooltip">
+                        {{x.total }}<br>
+                        {{x.period | date:"m/d/Y"}}
+                    </div>
+                </div>
+        {% endfor %}
+        </div>
+        <br>
+        <br>
+        <br>
+        <p><strong>Histogram of Last Sold Price</strong></p>
+        <div class="bar-chart">
+            {% for x in summary_lastsoldprice %}
+                <div class="bar" style="height:{{x.pct}}%">
+                    <div class="bar-tooltip">
+                        {{x.count }}<br>
+                        ${{x.binmiddle | intcomma}}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+{% block pagination %}{% endblock %}
