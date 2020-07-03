@@ -15,9 +15,9 @@ $(function() {
 
     // D3 Projection
     var projection = d3.geoAlbers()
-        .scale( 35000 )
-        .rotate( [70.957,0] )
-        .center( [0, 42.533] )
+        .scale( 30000 )
+        .rotate( [71.257,0] )
+        .center( [0, 42.433] )
         .translate( [width / 2,height / 2]);
 
     // Define path generator
@@ -184,7 +184,7 @@ $(function() {
             function draw_map(geojson) {
 
                 var lowColor = '#f9f9f9'
-                var highColor = '#bc2a66'
+                var highColor = '#bc2a2a'
                 var minVal = d3.min(avghomeprices, d=>d.avgsoldprice);
                 var maxVal = d3.max(avghomeprices, d=>d.avgsoldprice);
                 var ramp = d3.scaleLinear().domain([minVal,maxVal]).range([lowColor,highColor])
@@ -306,10 +306,9 @@ $(function() {
                         var filterdata = alldata.filter(function(d, idx) {return added[idx_to_name[idx]];});
                         var selldist = townselldistgroup.selectAll('path').data(filterdata);
                         var maxy = d3.max(filterdata.map(function(d) {
-                            var sellbydate = d3.nest().key(function(d2) {return new Date(d2.lastsolddate).setDate(1);})
-                                    .rollup(function(v) { return v.length; })
+                            var sellbydate = d3.nest().key(function(d2) {return new Date(d2.lastsolddate).setUTCDate(1);})
                                     .entries(d);
-                            return d3.max(sellbydate.map(function(d2) {return d2.value}))
+                            return d3.max(sellbydate.map(function(d2) {return d2.values.length;}))
                         }));
                         sellYScale.domain([0, maxy]);
                         townselldist.selectAll("g.y.axis")
@@ -320,7 +319,7 @@ $(function() {
                             .append("g")
                             .merge(selldots)
                             .each(function(d) {
-                                var sellbydate = d3.nest().key(function(d2) {return new Date(d2.lastsolddate).setDate(1);})
+                                var sellbydate = d3.nest().key(function(d2) {return new Date(d2.lastsolddate).setUTCDate(1);})
                                     .rollup(function(v) { return v.length; })
                                     .entries(d);
 
@@ -334,11 +333,17 @@ $(function() {
                                     .attr("cy", function(d2) { return sellYScale(d2.value) })
                                     .attr("r", 5)
                                     .style("fill", myColor(d[0].city.toLowerCase()))
-                                    .on("mouseover", function(a, b, c) {
+                                    .on("mouseover", function(d2) {
   			                                //console.log(a)
                                             //this.attr('class', 'focus')
+                                            tooltip.transition().duration(200).style("opacity", 0.9);
+                                            tooltip.html("Time: " + new Date(parseInt(d2.key)).toDateString() + linebreak + "Count: " + d2.value)
+                                            .style("left", (d3.event.pageX + 30) + "px")
+                                            .style("top", (d3.event.pageY - 28) + "px");
 		                                })
-                                    .on("mouseout", function() {  })
+                                    .on("mouseout", function() {
+                                        tooltip.transition().duration(500).style("opacity", 0);
+                                    })
 
                                 selldotsingle.exit().remove();
 
@@ -349,7 +354,7 @@ $(function() {
                             .append("path")
                             .merge(selldist)
                             .each(function(d) {
-                                var sellbydate = d3.nest().key(function(d2) {return new Date(d2.lastsolddate).setDate(1);})
+                                var sellbydate = d3.nest().key(function(d2) {return new Date(d2.lastsolddate).setUTCDate(1);})
                                     .rollup(function(v) { return v.length; })
                                     .entries(d);
 
@@ -365,7 +370,10 @@ $(function() {
                                     .style("stroke", function() {
                                         return myColor(d[0].city.toLowerCase());
                                     })
+
+
                             })
+
                         selldist.exit().remove();
 
                     }
